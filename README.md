@@ -1,1 +1,3 @@
-[![Header](https://raw.githubusercontent.com/WenxinXi/<OWNER>/<OWNER>/readme_header.png "Header")](https://some-url.dev/)
+#Wenxin Xi 
+You can find me on [![LinkedIn]][1].
+[1]: https://www.linkedin.com/in/wenxin-xi-092538216/ 
