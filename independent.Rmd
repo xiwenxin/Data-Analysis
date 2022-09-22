@@ -1,0 +1,116 @@
+---
+title: "install"
+author: "Wenxin Xi"
+date: "12/20/2021"
+output: html_document
+---
+
+```{r}
+d = read.csv(file.choose())
+library(QMSS)
+```
+
+
+```{r}
+d$smokenow_1 = ReverseThis(d$SMKNOW_A)
+d$smokenow = ordered(d$smokenow_1, levels = c(7,8,9), labels = c("Don't Smoke","Smoke Some Days", "Smoke Every Day"))
+table(d$smokenow)
+
+d$smokestatus_1= cut(d$SMKCIGST_A, breaks = c(0,2,3,4),labels = c("Current Smoker", "Past Smoker", "Never smoker"))
+
+d$smokestatus <- ReverseThis(d$smokestatus_1)
+table(d$smokestatus)
+```
+
+```{r}
+d$chdev = ordered(d$CHDEV_A, levels = c(1,2))
+table(d$chdev)
+d$chd = ifelse(d$chdev==1,1,0)
+table(d$chd)
+```
+
+
+```{r}
+d$angev = ordered(d$ANGEV_A, levels = c(1,2))
+d$angina = ifelse(d$angev==1,1,0)
+table(d$angina)
+
+d$miev = ordered(d$MIEV_A, levels = c(1,2))
+d$ha = ifelse(d$miev==1,1,0)
+table(d$ha)
+
+d$strev = ordered(d$STREV_A, levels = c(1,2))
+d$stroke = ifelse(d$strev==1,1,0)
+table(d$stroke)
+
+table(d$SMKAGE_A)
+```
+
+```{r}
+d$smokeage= cut(d$SMKAGE_A, breaks = c(6,18,30,42,95),labels = c("under 18", "19-30", "31-42","above 42"))
+table(d$smokeage)
+
+table(d$FORNUMCIG_A)
+
+d$smokeamount= cut(d$FORNUMCIG_A, breaks = c(0,10,20,30,90),labels = c("under 10", "11-20", "21-30","above 30"))
+table(d$smokeamount)
+
+
+
+
+```
+## controlled variables
+
+```{r}
+d$alcohol= cut(d$DRKSTAT_A, breaks = c(0,1,4,9),labels = c("abstainer", "former drinker", "current drinker"))
+table(d$alcohol)
+
+```
+
+```{r}
+d$sex = ordered(d$SEX_A, levels = c(1,2))
+d$female = ifelse(d$sex == 2,1,0)
+table(d$female)
+d$dibev = ordered(d$DIBEV_A, levels = c(1,2))
+table(d$dibev)
+d$diabetes = ifelse(d$dibev == 1,1,0)
+table(d$diabetes)
+```
+
+```{r}
+sub <- d[, c("smokenow", "smokestatus", "smokeage", "smokeamount","chd","angina","ha","stroke","alcohol","female","diabetes")]
+```
+
+
+
+
+## chd
+```{r}
+lm1 = lm(chd ~ as.numeric(smokestatus), data=sub) 
+summary(lm1)
+lm2 = update(lm1, ~.+as.numeric(alcohol) + diabetes)
+summary(lm2)
+library(stargazer)
+stargazer(lm1, lm2, type = "text")
+
+logit1 = glm(chd ~ as.numeric(smokestatus) + as.numeric(alcohol) + diabetes , sub, family=binomial)
+summary(logit1)
+```
+
+## angina
+
+```{r}
+lm3 = lm(angina ~ as.numeric(smokestatus), data=sub) 
+summary(lm3)
+lm4 = update(lm1, ~.+as.numeric(alcohol) + diabetes)
+summary(lm4)
+library(stargazer)
+stargazer(lm3, lm4, type = "text")
+
+logit2 = glm(angina ~ as.numeric(smokestatus) + as.numeric(alcohol) + diabetes , sub, family=binomial)
+summary(logit2)
+```
+```{r}
+anova(lm3,lm4)
+```
+
