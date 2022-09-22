@@ -1,0 +1,157 @@
+---
+title: "Wenxin Xi Lab3"
+author: "Wenxin Xi"
+date: "10/26/2021"
+output: html_document
+---
+
+
+```{r setup}
+setwd("/Users/veron/OneDrive/Desktop/5015Lab/Lab1")
+g <-  read.csv("GSS.2006.csv.xls")
+```
+
+
+## 1. Run a simple bivariate regression, and interpret your results.  (Did the results fit your expectations?  Why?  Why not?)  
+
+
+
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab3/2.jpg')
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab3/3.jpg')
+```
+
+
+
+```{r}
+g$realinc1000s = (g$realinc)/1000  ## turn family income into 1000s of dollars for ease of interpretation
+library(QMSS)
+g$nounemp2reverse <- ReverseThis(g$nounemp2)  ## reverse this variable for ease of interpretation
+plot(as.factor(g$nounemp2reverse), g$realinc1000s) 
+lm1 = lm(g$nounemp2reverse ~ realinc1000s , data=g,subset = !is.na(big5c2) )
+summary(lm1)
+```
+
+
+I choose to look at two variables that are "nounemp2" and "realinc". "Nounemp2" is asking respondents' opinions on avoiding unemployment by accepting a position with lower pay. The answers range 1(strongly agree) and 5(strongly disagree). For ease of explanation, I re code "nounemp2" into "nounemp2reverse" by using reverse. "Realinc" shows family income on 1972-1991 surveys in constant dollars (base = 1986). I re code this variable into "realinc1000s" for ease of explanation. 
+
+For every 1000 dollars more in family income, respondents have 0.005 higher level agreement with avoiding unemployment by accepting a position with lower pay, on average. It is highly statistically significant(p<0.001). The adjusted R-squared for this model is 0.01718 suggesting we can explain about 1.7 percent of the variation in relation between family income and respondents opinions on avoiding unemployment by accepting a position with lower pay, which is quite low.
+
+The results fit my expectations because I hypothesize that higher family income due to employment of more family members that requires more family members having jobs. It seems like a position with lower pay brings less income; however, people can avoid unemployment in this way and it guarantees more family members having jobs. The results from this model fit my expectations since respondents have higher level agreement on avoiding unemployment by accepting a position with lower pay for every 1000 dollars more in family income. 
+
+## 2. Add an additional variable that might mediate or partly "explain" the initial association from that simple regression above -- and explain your results.  Did it work out?  Yes?  No? 
+
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab3/4.jpg')
+```
+
+
+```{r}
+library(QMSS)
+g$Rjobinc <- ReverseThis(g$jobinc)
+plot(as.factor(g$Rjobinc), g$realinc1000s)
+lm2 = lm(nounemp2reverse ~ realinc1000s + Rjobinc, data=g)
+summary(lm2)
+```
+
+I add an additional variable "jobinc" that asking respondents' level of preference about high income in a job. The answers rank from the most prefer to the fifth. I re code "jobinc" into "Rjobinc" by using reverse for ease of explanation. That means higher score shows higher level of preference of high income in a job.
+
+Controlling family income, for each one higher level preference category of high income in a job, respondents have about 0.167 lower level agreement with avoiding unemployment by accepting a position with lower pay, on average. It is highly statistically significant(p<0.001).
+
+Controlling preference level of high income in a job, for every 1000 dollars more in family income, respondents have about 0.005 higher level agreement with avoiding unemployment by accepting a position with lower pay, on average. It is highly statistically significant(p<0.001). The coefficient of "realinc1000s" is similar with the result in the eariler model.
+
+From the results in this model, the additional variable "Rjobinc" hardly changes the family income variable, so it is not mediating the effect really.
+
+```{r}
+library(stargazer)
+stargazer(lm1, lm2, type = "text")
+```
+
+
+ 
+## 3. Run another multiple regression.  Tell me how you expect your dependent variable to be affected by the independent variables.  Interpret your results.
+
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab3/5.jpg')
+```
+
+
+```{r}
+library(plyr)
+d = read.csv(file.choose("Users/veron/OneDrive/Desktop/5015Lab/WVS.csv")) 
+
+
+d = rename(d, c("V70"="creative"))
+library(QMSS)
+d$rcreative <- ReverseThis(d$creative)
+d$rcreative.lab <- ordered(d$rcreative, levels = c(1,2,3,4,5,6), labels = c("not at all like me", "not like me", "a little like me", "somewhat like me", "like me", "very much like me"))
+table(d$rcreative.lab)
+
+
+
+```
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab3/6.jpg')
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab3/7.jpg')
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab3/8.jpg')
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab3/9.jpg')
+```
+
+
+```{r}
+d = rename(d, c("V249"="eduage"))
+d$uniwde = ifelse(d$V248==9, 1, 0)
+d$male = ifelse(d$V240==1, 1, 0)
+d = rename(d, c("V238"="cla")) 
+## We did this for Australia and only if people also answered about cla
+
+lm1 = lm(as.numeric(rcreative.lab) ~ eduage + male + uniwde, d, subset=V2==36 & !is.na(cla))
+summary(lm1)
+
+
+```
+ 
+The dependent variable is "creative". The question for "creative" is "Using this card, would you please indicate for each description whether that person is very much like you, like you, somewhat like you, not like you, or not at all like you? It is important to this person to think up new ideas and be creative; to do things one's own way". I re code the original variable by using reverse and make higher score for this question meaning more like respondents. 
+
+My independent variables are "eduage", "uniwde" and "male". 
+
+1. "Eduage" is respondents' age of completing full time education, either at school or at an institution of higher education excluding apprenticeships. I hypothesize with "eduage" increasing,  respondents will have higher score for "creative" meaning they think people who think being creative is important will more like respondents themselves. That's because I think increasing age of completing full time education representing they have longer educated time that make them become people with creativity. 
+
+2. "Uniwde" represents the "university-level education, with degree" category for the question asking respondents highest education level they have obtained. I hypothesize the dependent variable will have higher score for this category since "uniwde" representing people with the highest educational level of all the answers. Better educational background brings people independence and creativity. 
+
+3. "male" representing respondents' sex is male. I hypothesize male will have higher score for "creative".
+
+Result from the model:
+
+Controlling for sex and highest education level, for each year older in respondents' age of completing full time education, the score increases about 0.002 on average representing respondents think person who regarding thinking up new ideas and being creative important are more like themselves. But it is not statistically significant since p-value is 0.52 that is much higher than 0.05.
+
+Controlling education age and highest education level, for male, the score increases about 0.39 on average representing male respondents think person who regarding thinking up new ideas and being creative important are more like themselves. It is highly statistically significant (p<0.001). This result is the same with what I expected.
+
+Controlling education age and sex, for respondents who have obtained university-level education with degree, the score increases about 0.19 on average representing this category of respondents think person who regarding thinking up new ideas and being creative important are more like themselves. It is statistically significant because p-value is about 0.02(p<0.05). The result is the same with what I hypothesized.
+
+ 
+
+## 4. Now add another independent variable to that model in Question 3, preferably a set of dummy variables.  Tell me why you added that new set of variables and what effect you expected them to have.  Did they have an effect?  Interpret that new model.  
+
+```{r}
+
+lm2 = lm(as.numeric(rcreative.lab) ~ eduage + male + uniwde + cla, d, subset=V2==36)
+summary(lm2)
+```
+ 
+I add another variable "cla" representing respondents describe themselves as belonging to which working class. The answers range from 1(Upper class) to 5(lower class). High scores mean they describe themselves as belonging to the lower working class. I hypothesize that with score of "cla" increasing, the score of "creative" decreases. It means that lower working class people think person who regarding thinking up new ideas and being creative important are less like themselves. 
+ 
+Controlling for education age, sex and highest education level, for each higher score in "cla" representing one level lower working class, score of "creative" decreases about 0.15 on average meaning respondents think person who regarding thinking up new ideas and being creative important are less like themselves. It is statistically significant(p<0.01). The result is consistent with what I expected.
+
+Effect:
+New independent variable "cla" has an effect on "uniwde".In the earlier restricted model(includes only "eduage","male","uniwde"), coefficient of "uniwde" is about 0.19. In the new unrestricted model(includes "eduage", "male", "uniwde" and "cla"), coefficient of "uniwde" is about 0.11. That means, controlling other variables including working class additionally, the respondents who have obtained university-level education with degree, the score increases about 0.11 on average representing this category of respondents think person who regarding thinking up new ideas and being creative important are more like themselves. The coefficient of "uniwde" becomes lower in the new model. In the last model, the relationship between "uniwde" and dependent variable "creative" is statistically significant; however, in this model, the relationship between "uniwde" and "creative" is not statistically significant since p-value is about 0.22(much higher than 0.05). 
+
+New independent variable “cla" doesn't have too much effect on "eduage" and "male" since the coefficient of "eduage" and "male" in the new unrestricted model is similar to the value in the ealier model.
+ 
+
+## 5. Now run a partial F test comparing the model in Question 3 to the model in Question 4.  Does the F test support the idea of adding those new variables?  Why?  Why not? 
+
+```{r}
+anova(lm1, lm2)
+```
+Additional variable improves my earlier restricted model ( which only has eduage, male and uniwde). P-value from partial F-test is 0.003 which is quite low(p<0.01) and it suggests that "cla" is a good addition to the model.
