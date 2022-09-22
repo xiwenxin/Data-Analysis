@@ -1,0 +1,125 @@
+---
+title: "Wenxin Xi - 5015Lab4"
+author: "Wenxin Xi"
+date: "11/10/2021"
+output: html_document
+---
+
+```{r}
+library(plyr)
+w = read.csv(file.choose())
+w = rename(w, c("V248"="education"))
+w = rename(w, c("V2"="country"))
+w = rename(w, c("V157"="twenty"))
+w = rename(w, c("V158"="forty"))
+
+table(w$twenty)
+table(w$forty)
+
+```
+
+Here, I want to look at how respondents think most people view the position in society of people in their 20s and 40s by highest educational level and country.
+
+- V248 "What is the highest educational level that you have attained? "
+- The answers range from 1) No formal education to 9)University-level education, with degree. Higher score represents higher educational level.
+
+- V2 "Country Code"
+
+- V157 "I'm interested in how you think most people in this country view the position in society of people in their 20s, people in their 40s and people over 70. Using this card, please tell me where most people would place the social position of: people in their 20's?"
+- The answers range from 1)Extremely low social position to 10)Extremely high social position. Higher score represents higher social position. 
+
+- V158 "I'm interested in how you think most people in this country view the position in society of people in their 20s, people in their 40s and people over 70. Using this card, please tell me where most people would place the social position of: people in their 40's? "
+- The answers range from 1)Extremely low social position to 10)Extremely high social position. Higher score represents higher social position. 
+
+### 1. Run a simple regression, and interpret your results.  (Did the results fit your expectations?  Why?  Why not?) 
+
+People's highest educational level and country (US vs. Japan) affect how people view most people view the position in society of people in their 20s. I hypothesize that people from higher educational level will regard 20s in a lower position since twenty is still a young age.  
+
+```{r}
+# Japan: 392
+# The US: 840
+lm1 = lm(twenty ~ education + as.factor(country), 
+         data=w, (country==392 | country==840) )
+summary(lm1)
+```
+
+Highest educational level has significant negative relationship with whether people in US and Japan think most people view the position in society of people in their 20s. The regression table above shows:
+
+- The increase of one higher educational level translates to about 0.11 point decrease *on average* in social position score of 20s net of country. This relationship is highly statistically significant since p value is less than 0.001. The result is consistent with my hypothesis. 
+
+- Net of highest educational level, people in the US (country code:840) has about 0.43 point higher *on average* in social position score of 20s compared to Japan. It is highly statistically significant (p<0.001).
+
+
+lm1 generates surprising results, what about: Does one's educational level and country (US vs. Japan) affect how they think most people view the position in society of people in their 40s? 
+
+I hypothesize that people from higher educational level will regard 40s in a higher position since people who are forty years old will have a job or they have been successful. 
+
+```{r}
+# Japan: 392
+# The US: 840
+lm2 = lm(forty ~ education + as.factor(country), 
+         data=w, (country==392 | country==840) )
+summary(lm2)
+```
+Highest educational level has significant positive relationship with whether people in US and Japan think most people view the position in society of people in their 40s. The result is consistent with my hypothesis. The regression table above shows:
+
+- The increase of one higher educational level translates to about 0.04 point increase *on average* in social position score of 40s net of country. This relationship is statistically significant since the probability of getting the t-statistics as large as what we got only happened <0.0117 of the times under the condition that there is no relationship between variable of interest.
+
+- Net of highest educational level, people in the US (country code:840) has about 0.23 point lower *on average* in social position score of 40s compared to Japan. It is highly statistically significant (p<0.001).
+
+
+
+
+### 2. Add an interaction term to that model that you think might moderate the original relationship between X1 and X2.  Explain why you think an interaction might be present and in what direction it would work.
+
+We add interaction variable if we think there is a relationship between 2 of our independent variables that might affect the magnitude of dependent variable. 
+Or if we believe that by changing the value of one variable, the effect of other variable to the dependent variable might change. 
+
+In this analysis, we include an interaction between highest educational level and country because we believe that regardless of their initial thought on social position of 20s, in the US, highest educational level will matter more compared than in Japan. Since education environment has many differences between Japan and the US, I choose this interaction term in my analysis. 
+
+```{r}
+lm3 = lm(twenty ~ education*as.factor(country), 
+         data=w, (country==392 | country==840) )
+summary(lm3)
+```
+
+Highest educational level, on average and net of other variables has negative relationship with most people view the position in society of people in their 20s.
+
+
+- On average, an increase of one higher level in highest educational level in Japan (country code: 392) translates to about 0.067 point decrease in social position score of 20s. This relationship is statistically significant since the probability of getting the t-statistics as large as what we got only happened <0.00797 of the times under the condition that there is no relationship between variable of interest.
+
+- On average, an increase of one higher level in highest educational level in the US (country code: 840) translates to about 0.19 point decrease in social position score of 20s. The result is consistent with my hypothesis. 
+
+- The interaction is statistically significant with p-value 0.00298 (less than 0.01).
+
+
+```{r}
+anova(lm1, lm3) ## Did adding the interaction improve my model? ##
+```
+
+This interaction term improves my model since p-value is 0.002975 (less than 0.01).
+
+### 3. Give me an update on your independent project.  What do you plan to investigate?  What are your hypotheses?  What date are you using?  How can we help? 
+
+
+I want to test whether smoking or not has an effect on having angina or coronary heart disease. Moreover, the categories of smoking habits' effect on having angina or coronary heart diseases like different smoking amounts or products.
+I hypothesize that smoking will have a positive relationship with morbidity of having angina or coronary heart disease. Moreover, longer years and larger smoking amount will translate an increase in morbidity of having angina or coronary heart disease. 
+I am not sure about the using date. Can I ask for help that dataset recommendations? I have found one but I am not sure about the quality of dataset. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
