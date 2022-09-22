@@ -1,0 +1,134 @@
+---
+title: "Lab 5"
+author: "Wenxin Xi"
+date: "11/23/2021"
+output: html_document
+---
+
+```{r}
+d = read.csv(file.choose())
+sub <- d[, c("stress", "hrs1", "cowrkers", "jobsat")]
+sub <- na.omit(sub)
+```
+
+I decided to look at the relationship between "Do you find your work stressful" and some working related variables:
+
+1. Do you find your work stressful? (STRESS)
+2. How many hours did you work last week, at all jobs? (HRS1)
+3. In general, how would you describe relations in your work place between co-workers/colleagues? (COWRKERS)
+4. How satisfied are you in your job? (JOBSAT)
+
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab5/1.jpg')
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab5/2.jpg')
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab5/3.jpg')
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab5/4.jpg')
+```
+
+
+STRESS - stre: I make STRESS a binary variable for future analysis using the code. By doing so, I will get a dummy variable. 1 represents respondents find their work stressful always, while 0 represents respondents find their work stressful not always(everything else).
+
+```{r}
+sub$stre = ifelse(sub$stress==1, 1, 0)
+table(sub$stre)
+```
+
+
+## 1. Run a multiple linear probability model.  Tell me how you think your independent variables will affect your dependent variable.  Interpret your results.  Were your expectations correct?  Why or why not?
+
+linear probability model is a special case of a binary regression model. Here the dependent variable for each observation takes values which are either 0 or 1:
+
+Hypothesis 1,2,3
+
+    1. I expect that more hours repondents worked last week, the probability that the respondent find their work stressful always (stre == 1) is higher.
+    2. I expect that the worse the respondents describe the relationship between coworkers(the higher value of cowrkers represents the worse relationship, range from 1 to 5 that 1 means very good and 5 means very bad),  the probability that the respondents find their work stressful always (stre == 1) is higher.
+    3. I expect that the respondents are more dissatisfied in their jobs(the higher value of jobsat represents more dissatisfied, range from 1 to 7 that 1 means completely satisfied and 7 means completely dissatisfied), the probability that the respondents find their work stressful always (stre == 1) is higher.
+
+```{r}
+lm1 = lm(stre ~ hrs1 + cowrkers + jobsat , sub)
+summary(lm1)
+```
+From the regression summary, we can see that the coefficient for hrs1 is 0.0043557:
+For each one hour the respondents worked last week increases, on average, a respondent is about 0.436 percentage points more likely to find their work stressful always (stre == 1) rather than not always, net of other factors.
+
+The coefficient for cowrkers is 0.0172833:
+For every category increase in the respondents describe the relationship between coworkers(represents one level of worse relationship), on average, a respondent is about 1.73 percentage points more likely to find their work stressful always (stre == 1) rather than not always, net of other factors.
+
+The coefficient for jobsat is 0.0395880:
+For every category increase in the respondents dissatisfaction in their jobs, on average, a respondent is about 3.96 percentage points more likely to find their work stressful always (stre == 1) rather than not always, net of other factors.
+
+The linear probability model lm1, confirms my hypothesis that:
+(1) more hours respondents worked last week;
+(2) the worse the respondents describe the relationship between coworkers;
+(3) the respondents are more dissatisfied in their jobs;
+the probability that the respondent find their work stressful always (stre == 1) is higher.
+Also, notice that the p-values for hrs1 and jobsat are extremely small, even though p-values in the linear probability model is questionable.
+
+
+## 2. Run a multiple (binary) logistic model.  (It can be the same as the above LPM or -- even better -- a new model.)  Tell me how you think your independent variables will affect your dependent variable.  Interpret your results in the logit scale.  Were your expectations correct?  Why or why not?
+
+Same hypotheses
+When using logistic regression model, we actually predict the log of the odds, instated of the probability of certain events.
+
+```{r}
+logit1 = glm(stre ~ hrs1 + cowrkers + jobsat , sub, family=binomial)
+summary(logit1)
+```
+The coefficient for hrs1 is 0.032628:
+For each one hour the respondents worked last week increases, on average, a respondent increases the logit by 0.033 of finding their work stressful always, net of other factors.
+
+The coefficient for cowrkers is 0.124115:
+For every category increase in the respondents describe the relationship between coworkers(represents one level of worse relationship), on average, a respondent increases the logit by 0.124 of finding their work stressful always, net of other factors.
+
+The coefficient for jobsat is 0.268440:
+For every category increase in the respondents dissatisfaction in their jobs, on average, a respondent increases the logit by 0.268 of finding their work stressful always, net of other factors.
+
+The binary logistic model logit1, confirms my hypothesis that:
+(1) more hours respondents worked last week;
+(2) the worse the respondents describe the relationship between coworkers;
+(3) the respondents are more dissatisfied in their jobs;
+the respondent find their work stressful always (stre == 1).
+Also, notice that the p-values for hrs1 and jobsat are extremely small, even though p-values in the binary logitstic model is questionable.
+
+
+
+
+## 3. Get odds ratios from your logit model in Question 2 and interpret some of them.  
+An odds ratio (OR) is a measure of association between an exposure and an outcome. The OR represents the odds that an outcome will occur given a particular exposure, compared to the odds of the outcome occurring in the absence of that exposure.
+
+OR=1 Exposure does not affect odds of outcome
+
+OR>1 Exposure associated with higher odds of outcome
+
+OR<1 Exposure associated with lower odds of outcome
+
+Since all of the odds-ratios are larger than 1, it means that as these variables increase, the outcomes are more likely to occur as well
+
+```{r}
+exp(coef(logit1))
+```
+The odd ratio for hrs1 is 1.03316616:
+For each one hour the respondents worked last week increases, on average, increase a respondent's odds of finding their work stressful always by 1.03316616, net of other factors. The odds of finding their work stressful always go up by 3.32% when the respondent worked last week one hour more, net of other factors, because (1.03316616 - 1) * 100% = 3.32%. This is a proportionate increase, not an absolute increase.
+
+The odd ratio for cowrkers is 1.13214640:
+For every category increase in the respondents describe the relationship between coworkers(represents one level of worse relationship), on average, increase a respondent's odds of finding their work stressful always by 1.13214640, net of other factors. The odds of finding their work stressful always go up by 13.21% when the respondent describe one level worse the relationship between coworkers, net of other factors, because (1.13214640 - 1) * 100% = 13.21%. This is a proportionate increase, not an absolute increase.
+
+The odd ratio for jobsat is 1.30792224:
+For every category increase in the respondents dissatisfaction in their jobs, on average, increase a respondent's odds of finding their work stressful always by 1.30792224, net of other factors. The odds of finding their work stressful always go up by 30.79% when the respondent is one level more dissatisfied in their jobs, net of other factors, because (1.30792224 - 1) * 100% = 30.79%. This is a proportionate increase, not an absolute increase.
+
+## 4. Get predicted probabilities from your logit model in Question 2 for some constellations of X values and interpret the results.  
+
+I would manually get some predicted probabilities. Predicted probability tells the proportional effect of the predictor variable on the dependent variables’ probability of occurring, net of other factors.
+
+In the (1) case, I set cowrkers at 3(neither good nor bad) and jobsat at 4(neither satisfied nor dissatisfied). From the code and result below, we are able to see that the predicted probability of finding their work stressful always for someone who "worked 30 hours last week" vs "worked 60 hours last week" are 0.169 and 0.351, which are 16.9% and 35.1% probability. In other words, controlling other factors, respondents who "worked 60 hours last week" have a larger probability of finding their work stressful always than respondents who "worked 30 hours last week". This odd ratio supports my previous models.
+
+```{r}
+predict(logit1, type = "response", newdata = data.frame(hrs1 = c(30,60), cowrkers = c(3, 3), jobsat = c(4, 4)))
+```
+
+
+In the (2) case, I set hrs1 at 40(worked 40 hours last week) and cowrkers at 3(neither good nor bad). From the code and results below, we are able to see that the predicted probability of finding their work stressful always for someone who are "very satisfied" in their jobs vs "very dissatisfied" in their jobs are 0.141 and 0.325, which are 14.1% and 32.5% probability. In other words, controlling other factors, respondents who are "very dissatisfied" in their jobs have a larger probability of finding their work stressful always than respondents who are "very satisfied" in their jobs. This odd ratio supports my previous models. 
+```{r}
+predict(logit1, type = "response", newdata = data.frame(hrs1 = c(40,40), cowrkers = c(3, 3), jobsat = c(2, 6)))
+```
+
