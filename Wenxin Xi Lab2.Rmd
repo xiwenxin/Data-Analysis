@@ -1,0 +1,105 @@
+---
+title: "Wenxin Xi Lab2"
+author: "Wenxin Xi"
+date: "10/20/2021"
+output: html_document
+---
+
+```{r}
+setwd("/Users/veron/OneDrive/Desktop/5015Lab/Lab1")
+d <-  read.csv("GSS.2006.csv.xls")
+```
+
+## 1. Recode 1 *sort of* continuous variable into categories.  Tell me what you did and explain the variable(s).
+
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab2/1.jpg')
+```
+
+```{r}
+## Category Table
+d$pray.cat = cut(d$pray, breaks = c(0,2,4,6),label=c("strong","moderate","weak"),ordered=TRUE)
+table(d$pray.cat,d$pray)
+```
+
+I choose the variable "pray" into categories. This variable is asking respondents that how often do they pray. The answers range from 1-6 that 1 means respondents pray several times a day and 6 means never. I make 1 and 2 become a category named "strong" since 1 means several times a day and 2 means once a day. Category "strong" means they pray each day. Then I make 3(several times a week) and 4(once a week) into a same category "moderate". This category means they pray every week. I make 5(less than once a week) and 6(Never) into a category "weak". "Weak" means they pray less than once a week even never. From category table, we can see that respondents in strong category is the most part and moderate is the least part. It means most repondents pray every day even several times each day.
+
+
+## 2. Recode 1 another variable and attach value labels.  Tell me what you did and explain the variable(s).
+
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab2/2.jpg')
+```
+
+```{r}
+library(QMSS)
+d$rnatcity <- ReverseThis(d$natcity)
+d$lab.rnatcity <- ordered(d$rnatcity, levels = c(1,2,3), labels = c("Too Much", "Right", "Not Enough"))
+table(d$lab.rnatcity, d$rnatcity)
+
+mean(as.numeric(d$lab.rnatcity), na.rm=T)
+prop.table(table(d$lab.rnatcity))
+```
+
+I recode variable "natcity" by using reverse. This variable shows respondents' concern over nation's problems on the big cities. Here is the specific question:"Are we spending too much, too little, or about the right amount on (ITEM)? D. Solving the problems of the big cities (NATCITY)." There are three answers: 1)Too Little; 2)About Right; 3)Too much. 
+I re-coded this variable to make it easier. From the table, we can see that about 49.4% of respondents believe that we are spending too little that are not enough on nation's problems on the big cities, and would like the government to spend more. Only about 37.8% of respondents think government spends the right amount on nation's problems on the big cities. Also, 173 people think the government spends too much and it is about 12.8% of respondents.
+
+## 3. Use one (or both) of your recoded variables to do a cross-tabulation (as you had done last week, with prop.table, doBy, or ddply). Explain your results.
+
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab2/3.jpg')
+```
+
+```{r}
+d$pray.cat = cut(d$pray, breaks = c(0,2,4,6),label=c("strong","moderate","weak"),ordered=TRUE)
+d$socrel.cat = cut(d$socrel, breaks = c(0,1,2,7),label=c("strong","moderate","weak"),ordered=TRUE)
+
+library(gmodels)
+CrossTable(d$pray.cat, d$socrel.cat, prop.r=F, prop.c=T, prop.t=F, prop.chisq=F, format="SPSS")
+```
+
+I chose to look at one variable from Question 1 "pray" and a new variable "socrel". Variable "Socrel" is the question that how often respondents spend a social evening with relatives. The answers range from 1 to 7 that 1 represents "almost every day" and 7 means "never". I make 1(almost every day) into "Strong" category since it means respondents spend a social evening with relatives every day. Then I make 2(once or twice a week) into "moderate" category since it shows respondents do this thing every week. Finally, I make 3(several times a month) to 7(Never) into "weak" category since it represents respondents' frequency of spending a social evening with relatives is less than once a week even never. 
+ I wanted to cross-tabulate these two variables that variable shows respondents' frequency to pray and variable shows respondents' frequency to spend a social evening with relatives. I hypothesized that people who belong to strong category in one variable would also belong to strong in another one since the family often pray together like before they have dinner that similar to they spend a social evening with relatives.
+Results from CrossTable partly support my hypothesis. About 72.4% respondents who belong to strong category of spending a social evening with relatives are in strong category of pray. Moreover, in the moderate and weak categories of "socrel", the percentage of strong category in pray is about 64.5% and 56.3% that are small than 72.4%. The result supports my hypothesis that most respondents belong to strong category in one variable "socrel" will also belong to strong category in another one "pray". 
+
+
+
+
+## 4. Run a linear regression with 1 independent and 1 dependent variable.  Make all of the recodes necessary to make the model as easy to interpret as possible.  And explain your results.
+
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab2/4.jpg')
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab2/5.jpg')
+```
+
+```{r}
+library(psych)
+describe(d$wrkgovt) 
+describe(d$spwrkgvt) 
+lm1 = lm(wrkgovt ~ spwrkgvt, data=d) 
+summary(lm1)
+```
+ 
+I choose to look at variable "wrkgovt" shows how many respondents are employed by government or by a private employer and variable "spwrkgvt" shows how many respondents' spouse work for the government or not. The result from this table indicate that the number of respondents' spouse work for government increases, on average, by 0.246; it is highly statistically significant(p<0.001). The adjusted R-squared from this model is 0.0521, suggesting we can explain about 5.21 percent of the variation in relation between respondents' work for government and their spouse' work for the government, which is not high.
+ 
+
+## 5. Plot two variables, either as a scatter plot or boxplot; add in trend/regression lines; and explain your results.
+```{r}
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab2/6.jpg')
+knitr::include_graphics('/Users/veron/OneDrive/Desktop/5015Lab/Lab2/7.jpg')
+```
+
+
+```{r}
+plot(d$age, d$yearsjob, main="Scatterplot ", 
+
+     xlab="age", ylab="yearsjob", pch=19) 
+
+abline(lm(yearsjob ~ age, data=d), col="blue")
+```
+
+I choose to look at variable "age" and "yearsjob" that shows how long have respondents worked in their present job for their current employer. I hypothesize that there is a positive relationship between "age" and "yearsjob" since older respondents are possibly working for a longer time. From that graph, we can see the regression line supports my hypothesis. Younger respondents who are under 30 years old mostly stay in less than 10 years of "yearsjob". With the respondents age increasing, "yearsjob" also increase. The result is consistent with what I hypothesize that older respondents will have longer years for working in their present job for their current employer.
+
+## 6. Tell me two theories/ideas you might want to test in this course. Do you have a dataset for these ideas/theories already? Do you have it in R- or Python-readable format already? What is your main independent variable? What is your main dependent variable?  Send me an email with the subject "Independent Project Ideas - [your name]" to gme2101@columbia.edu
+
+I want to test the relationship between smoking habits and heart disease. The first idea I want to test is whether smoking or not has an effect on having angina or coronary heart disease. The second idea is categories of smoking habits’ effect on having angina or coronary heart diseases like different smoking amounts or products. I have found a dataset in ASCII format and I think it is R-readable. My main independent variable will be smoking habits and the main dependent variable is angina or coronary heart diseases. 
